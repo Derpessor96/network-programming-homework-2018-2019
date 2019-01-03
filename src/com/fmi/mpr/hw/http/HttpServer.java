@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -39,17 +41,17 @@ public class HttpServer {
 				BufferedReader bufferedReader = new BufferedReader(inputReader)) {
 			String firstLine = bufferedReader.readLine();
 			
-			
+			// TODO: distinguish download/get upload form
 			if(firstLine == null) {
 				System.out.println("Received empty request!");
 			}
 			else if(firstLine.startsWith("POST")) {
 				System.out.println("Received POST request!");
-				uploadFile(bufferedReader);
+				uploadFile(socket);
 			}
 			else if(firstLine.startsWith("GET")) {
 				System.out.println("Received GET request!");
-				sendView(socket);
+				sendUploadView(socket);
 			}
 			else {
 				System.out.println("Unknown request type!");
@@ -57,12 +59,24 @@ public class HttpServer {
 		}
 	}
 
-	private void sendView(Socket socket) throws IOException {
-		//OutputStream output = socket.getOutputStream();
+	private void sendUploadView(Socket socket) throws IOException {
+		try(OutputStream output = socket.getOutputStream();
+				PrintStream printOutput = new PrintStream(output, true)) {
+			printOutput.println("HTTP/1.1 200 OK");
+			printOutput.println();
+			printOutput.println(fileUploadView);
+		}
 	}
 
-	private void uploadFile(BufferedReader bufferedReader) {
-		
+	private void uploadFile(Socket socket) throws IOException {
+		try(OutputStream output = socket.getOutputStream();
+				PrintStream printOutput = new PrintStream(output, true)) {
+			printOutput.println("HTTP/1.1 200 OK");
+			printOutput.println();
+			// TODO: receive file
+			
+			printOutput.println("Uploaded file successfully!");
+		}
 	}
 	
 	private void loadFileUploadView() throws IOException {
