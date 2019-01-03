@@ -9,9 +9,11 @@ import java.net.Socket;
 
 public class HttpServer {
 	private ServerSocket server;
+	private String fileUploadView;
 
 	public HttpServer(int port) throws IOException {
 		server = new ServerSocket(port);
+		loadFileUploadView();
 		System.out.println("Server configured on port " + port);
 	}
 
@@ -43,13 +45,29 @@ public class HttpServer {
 			}
 			else if(firstLine.startsWith("POST")) {
 				System.out.println("Received POST request!");
+				uploadFile(bufferedReader);
 			}
 			else if(firstLine.startsWith("GET")) {
 				System.out.println("Received GET request!");
+				sendView(socket);
 			}
 			else {
 				System.out.println("Unknown request type!");
 			}
 		}
+	}
+
+	private void sendView(Socket socket) throws IOException {
+		//OutputStream output = socket.getOutputStream();
+	}
+
+	private void uploadFile(BufferedReader bufferedReader) {
+		
+	}
+	
+	private void loadFileUploadView() throws IOException {
+		fileUploadView = FileUtils.getResourceAsString("/fileUpload.html");
+		System.out.println("Loaded fileUpoloadView: ");
+		System.out.println(fileUploadView);
 	}
 }
