@@ -80,7 +80,7 @@ public class HttpServer {
 	}
 	
 	private void loadFileUploadView() throws IOException {
-		fileUploadView = FileUtils.getResourceAsString("/fileUpload.html");
+		fileUploadView = Utils.getResourceAsString("/fileUpload.html");
 		System.out.println("Loaded fileUpoloadView: ");
 		System.out.println(fileUploadView);
 	}

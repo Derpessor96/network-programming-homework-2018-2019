@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public final class FileUtils {
-	private FileUtils() {
+public final class Utils {
+	private Utils() {
 		// Prevent instantiation
 	}
 	
