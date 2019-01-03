@@ -27,7 +27,7 @@ public class HttpServer {
 				System.out.println("Server attempting to listen...");
 
 				try (Socket socket = server.accept()) {
-					System.out.println("Received connection from " + socket.getLocalAddress());
+					System.out.println("Received connection from " + socket.getRemoteSocketAddress());
 					
 					process(socket);
 				}
@@ -61,16 +61,11 @@ public class HttpServer {
 			
 			String method = httpRequest[0];
 			String path = httpRequest[1];
-
-			System.out.println("0:" + httpRequest[0]);
-			System.out.println("1:" +httpRequest[1]);
-			System.out.println("2:" +httpRequest[2]);
-			
-			System.out.println("Path: " + path);
 			
 			Map<String, String> headers = Utils.getHeaders(bufferedReader);
 			System.out.println(headers);
 			
+			// TODO: add download
 			// TODO: distinguish download/get upload form
 			if(method.equals("POST")) {
 				System.out.println("Received POST request!");
