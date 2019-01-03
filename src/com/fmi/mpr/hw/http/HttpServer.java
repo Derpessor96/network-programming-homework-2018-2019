@@ -8,14 +8,18 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.util.Map;
 
 public class HttpServer {
 	private ServerSocket server;
 	private String fileUploadView;
+	private String notFoundView;
+	private String serverErrorView;
 
 	public HttpServer(int port) throws IOException {
 		server = new ServerSocket(port);
-		loadFileUploadView();
+		loadViews();
 		System.out.println("Server configured on port " + port);
 	}
 
@@ -36,25 +40,51 @@ public class HttpServer {
 	}
 
 	private void process(Socket socket) throws IOException {
-		try(InputStream socketStream = socket.getInputStream();
-				InputStreamReader inputReader = new InputStreamReader(socketStream);
-				BufferedReader bufferedReader = new BufferedReader(inputReader)) {
+		InputStreamReader inputReader = null;
+		BufferedReader bufferedReader = null;
+		
+		try {
+			inputReader = new InputStreamReader(socket.getInputStream());
+			bufferedReader = new BufferedReader(inputReader);
+			
 			String firstLine = bufferedReader.readLine();
+			
+			Map<String, String> headers = Utils.getHeaders(bufferedReader);
+			System.out.println(headers);
+			
+			String address = headers.get("Host");
+			URL url = new URL(address);
+			String path = url.getPath();
+			
+			System.out.println("Path: " + path);
 			
 			// TODO: distinguish download/get upload form
 			if(firstLine == null) {
 				System.out.println("Received empty request!");
+				sendNotFound(socket);
 			}
 			else if(firstLine.startsWith("POST")) {
 				System.out.println("Received POST request!");
 				uploadFile(socket);
 			}
-			else if(firstLine.startsWith("GET")) {
+			else if(firstLine.startsWith("GET")
+						&& path.equals("/")) {
 				System.out.println("Received GET request!");
 				sendUploadView(socket);
 			}
 			else {
 				System.out.println("Unknown request type!");
+				sendNotFound(socket);
+			}
+		}
+		catch(Exception e) {
+			sendServerError(socket);
+			
+			if(bufferedReader != null) {
+				bufferedReader.close();
+			}
+			if(inputReader != null) {
+				inputReader.close();
 			}
 		}
 	}
@@ -79,9 +109,37 @@ public class HttpServer {
 		}
 	}
 	
-	private void loadFileUploadView() throws IOException {
+	private void sendNotFound(Socket socket) throws IOException {
+		try(OutputStream output = socket.getOutputStream();
+				PrintStream printOutput = new PrintStream(output, true)) {
+			printOutput.println("HTTP/1.1 404 Not Found");
+			printOutput.println();
+			
+			printOutput.println(notFoundView);
+		}
+	}
+	
+	private void sendServerError(Socket socket) throws IOException {
+		try(OutputStream output = socket.getOutputStream();
+				PrintStream printOutput = new PrintStream(output, true)) {
+			printOutput.println("HTTP/1.1 500 Internal Server Error");
+			printOutput.println();
+			
+			printOutput.println(serverErrorView);
+		}
+	}
+	
+	private void loadViews() throws IOException {
 		fileUploadView = Utils.getResourceAsString("/fileUpload.html");
 		System.out.println("Loaded fileUpoloadView: ");
 		System.out.println(fileUploadView);
+
+		notFoundView = Utils.getResourceAsString("/notFound.html");
+		System.out.println("Loaded notFoundView: ");
+		System.out.println(notFoundView);
+		
+		serverErrorView = Utils.getResourceAsString("/serverError.html");
+		System.out.println("Loaded notFoundView: ");
+		System.out.println(serverErrorView);
 	}
 }
