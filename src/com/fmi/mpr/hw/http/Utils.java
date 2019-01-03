@@ -54,8 +54,8 @@ public final class Utils {
 				continue;
 			}
 			
-			String key = currLine.substring(0, splitIndex);
-			String value = currLine.substring(splitIndex);
+			String key = currLine.substring(0, splitIndex).trim();
+			String value = currLine.substring(splitIndex + 1).trim();
 			
 			headers.put(key, value);
 		}
