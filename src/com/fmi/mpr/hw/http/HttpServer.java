@@ -2,13 +2,11 @@ package com.fmi.mpr.hw.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URL;
 import java.util.Map;
 
 public class HttpServer {
@@ -49,26 +47,37 @@ public class HttpServer {
 			
 			String firstLine = bufferedReader.readLine();
 			
-			Map<String, String> headers = Utils.getHeaders(bufferedReader);
-			System.out.println(headers);
+			if(firstLine == null) {
+				System.out.println("Received bad request!");
+				sendNotFound(socket); // TODO: send something else
+			}
 			
-			String address = headers.get("Host");
-			URL url = new URL(address);
-			String path = url.getPath();
+			String[] httpRequest = firstLine.split("\\s+");
+			
+			if(httpRequest.length != 3) {
+				System.out.println("Received bad request!");
+				sendNotFound(socket); // TODO: send something else
+			}
+			
+			String method = httpRequest[0];
+			String path = httpRequest[1];
+
+			System.out.println("0:" + httpRequest[0]);
+			System.out.println("1:" +httpRequest[1]);
+			System.out.println("2:" +httpRequest[2]);
 			
 			System.out.println("Path: " + path);
 			
+			Map<String, String> headers = Utils.getHeaders(bufferedReader);
+			System.out.println(headers);
+			
 			// TODO: distinguish download/get upload form
-			if(firstLine == null) {
-				System.out.println("Received empty request!");
-				sendNotFound(socket);
-			}
-			else if(firstLine.startsWith("POST")) {
+			if(method.equals("POST")) {
 				System.out.println("Received POST request!");
 				uploadFile(socket);
 			}
-			else if(firstLine.startsWith("GET")
-						&& path.equals("/")) {
+			else if(method.equals("GET")
+					&& path.equals("/")) {
 				System.out.println("Received GET request!");
 				sendUploadView(socket);
 			}
